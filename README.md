@@ -142,8 +142,8 @@ wfh-attendance/
 ### ขั้นตอนที่ 1 — Clone โปรเจกต์
 
 ```bash
-git clone <repository-url>
-cd wfh-attendance
+git clone https://github.com/ninetea1688/wfh-project.git
+cd wfh-project
 ```
 
 ### ขั้นตอนที่ 2 — สร้างไฟล์ `.env`
@@ -262,8 +262,8 @@ npm --version
 ### ขั้นตอนที่ 1 — Clone และเตรียม Environment
 
 ```bash
-git clone <repository-url>
-cd wfh-attendance
+git clone https://github.com/ninetea1688/wfh-project.git
+cd wfh-project
 
 # สร้างไฟล์ .env
 copy .env.example .env    # Windows
