@@ -7,7 +7,7 @@ type AttendanceStatus = "PRESENT" | "INCOMPLETE";
 import { startOfDay, endOfDay } from "date-fns";
 
 const checkInSchema = z.object({
-  workType: z.enum(["WFH", "FIELD"]),
+  workType: z.enum(["WFH", "OFFICE", "FIELD"]),
   taskDescription: z.string().min(5, "กรุณาระบุภารกิจอย่างน้อย 5 ตัวอักษร"),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),

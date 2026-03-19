@@ -39,9 +39,44 @@ model User {
 
   department  Department?  @relation(fields: [departmentId], references: [id])
   attendances Attendance[]
+  workPlans   WorkPlan[]
 
   @@index([departmentId])
   @@map("users")
+}
+
+model WorkPlan {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  planDate   DateTime @map("plan_date") @db.Date
+  planType   PlanType @map("plan_type")
+  note       String?  @db.VarChar(500)
+  actualNote String?  @map("actual_note") @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user        User                 @relation(fields: [userId], references: [id])
+  attachments WorkPlanAttachment[]
+
+  @@unique([userId, planDate])
+  @@index([planDate])
+  @@index([userId])
+  @@map("work_plans")
+}
+
+model WorkPlanAttachment {
+  id         Int      @id @default(autoincrement())
+  workPlanId Int      @map("work_plan_id")
+  filePath   String   @map("file_path") @db.VarChar(500)
+  fileName   String   @map("file_name") @db.VarChar(255)
+  fileSize   Int?     @map("file_size")
+  mimeType   String?  @map("mime_type") @db.VarChar(100)
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  workPlan WorkPlan @relation(fields: [workPlanId], references: [id], onDelete: Cascade)
+
+  @@index([workPlanId])
+  @@map("work_plan_attachments")
 }
 
 model Attendance {
@@ -59,7 +94,7 @@ model Attendance {
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
-  user   User               @relation(fields: [userId], references: [id])
+  user   User              @relation(fields: [userId], references: [id])
   images AttendanceImage[]
 
   @@unique([userId, workDate])
@@ -88,10 +123,18 @@ enum Role {
 
 enum WorkType {
   WFH
+  OFFICE
   FIELD
 }
 
 enum AttendanceStatus {
   PRESENT
   INCOMPLETE
+}
+
+enum PlanType {
+  WFH
+  OFFICE
+  FIELD
+  LEAVE
 }

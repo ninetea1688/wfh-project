@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.routes";
 import attendanceRoutes from "./routes/attendance.routes";
 import usersRoutes from "./routes/users.routes";
 import reportsRoutes from "./routes/reports.routes";
+import workplanRoutes from "./routes/workplan.routes";
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -18,11 +19,10 @@ const PORT = process.env.PORT ?? 4000;
 app.use(helmet());
 app.use(
   cors({
-    origin:
-      process.env.CORS_ORIGIN?.split(",") ?? [
-        "http://localhost:5173",
-        "http://localhost:8080",
-      ],
+    origin: process.env.CORS_ORIGIN?.split(",") ?? [
+      "http://localhost:5173",
+      "http://localhost:8080",
+    ],
     credentials: true,
   }),
 );
@@ -64,6 +64,7 @@ app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/reports", reportsRoutes);
+app.use("/api/work-plans", workplanRoutes);
 
 // 404
 app.use((_req, res) =>

@@ -1,29 +1,37 @@
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/stores/auth.store'
-import { Home, Clock, FileText, User, LogOut } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/auth.store";
+import {
+  Home,
+  Clock,
+  FileText,
+  User,
+  LogOut,
+  CalendarDays,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 const navItems = [
-  { to: '/dashboard', icon: Home, label: 'หน้าหลัก' },
-  { to: '/checkin', icon: Clock, label: 'ลงชื่อ' },
-  { to: '/history', icon: FileText, label: 'ประวัติ' },
-  { to: '/profile', icon: User, label: 'โปรไฟล์' },
-]
+  { to: "/dashboard", icon: Home, label: "หน้าหลัก" },
+  { to: "/checkin", icon: Clock, label: "ลงชื่อ" },
+  { to: "/plan", icon: CalendarDays, label: "แผนงาน" },
+  { to: "/history", icon: FileText, label: "ประวัติ" },
+  { to: "/profile", icon: User, label: "โปรไฟล์" },
+];
 
 export default function StaffLayout({ children }: Props) {
-  const { user, logout } = useAuthStore()
-  const navigate = useNavigate()
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+  };
 
-  const initials = user ? `${user.firstName[0]}${user.lastName[0]}` : 'U'
+  const initials = user ? `${user.firstName[0]}${user.lastName[0]}` : "U";
 
   return (
     <div className="flex flex-col min-h-screen max-w-[430px] mx-auto bg-white shadow-lg">
@@ -37,8 +45,13 @@ export default function StaffLayout({ children }: Props) {
           <div className="w-7 h-7 rounded-full bg-blue flex items-center justify-center text-xs font-medium border border-white/30">
             {initials}
           </div>
-          <span className="text-xs text-white/70">{user?.firstName} {user?.lastName}</span>
-          <button onClick={handleLogout} className="p-1 text-white/60 hover:text-white transition-colors">
+          <span className="text-xs text-white/70">
+            {user?.firstName} {user?.lastName}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="p-1 text-white/60 hover:text-white transition-colors"
+          >
             <LogOut size={14} />
           </button>
         </div>
@@ -55,8 +68,8 @@ export default function StaffLayout({ children }: Props) {
             to={to}
             className={({ isActive }) =>
               cn(
-                'flex-1 flex flex-col items-center gap-1 py-2 px-1 transition-colors',
-                isActive ? 'text-navy' : 'text-slate-400'
+                "flex-1 flex flex-col items-center gap-1 py-2 px-1 transition-colors",
+                isActive ? "text-navy" : "text-slate-400",
               )
             }
           >
@@ -70,5 +83,5 @@ export default function StaffLayout({ children }: Props) {
         ))}
       </nav>
     </div>
-  )
+  );
 }

@@ -9,7 +9,9 @@ import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import AdminReportsPage from "@/pages/admin/AdminReportsPage";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 import AdminDepartmentsPage from "@/pages/admin/AdminDepartmentsPage";
-
+import AdminPlanCalendarPage from "@/pages/admin/AdminPlanCalendarPage";
+import AdminResultsCalendarPage from "@/pages/admin/AdminResultsCalendarPage";
+import WeeklyPlanPage from "@/pages/plan/WeeklyPlanPage";
 export default function App() {
   return (
     <>
@@ -34,6 +36,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <CheckinPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/plan"
+          element={
+            <ProtectedRoute>
+              <WeeklyPlanPage />
             </ProtectedRoute>
           }
         />
@@ -84,6 +94,22 @@ export default function App() {
           element={
             <ProtectedRoute role="ADMIN">
               <AdminDepartmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/plan-calendar"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminPlanCalendarPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/results-calendar"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminResultsCalendarPage />
             </ProtectedRoute>
           }
         />

@@ -11,7 +11,8 @@ import { formatThaiDate, formatTime, formatDuration } from "@/lib/utils";
 const FILTERS = [
   { label: "ทั้งหมด", value: "ALL" },
   { label: "WFH", value: "WFH" },
-  { label: "ราชการ", value: "FIELD" },
+  { label: "เข้าสำนักงาน", value: "OFFICE" },
+  { label: "ไปราชการ", value: "FIELD" },
 ];
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
@@ -88,9 +89,15 @@ export default function HistoryPage() {
           </div>
           <div className="text-center">
             <p className="text-xl font-semibold text-navy">
+              {records.filter((r) => r.workType === "OFFICE").length}
+            </p>
+            <p className="text-[10px] text-blue">เข้าสำนักงาน</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-semibold text-navy">
               {records.filter((r) => r.workType === "FIELD").length}
             </p>
-            <p className="text-[10px] text-blue">ราชการ</p>
+            <p className="text-[10px] text-blue">ไปราชการ</p>
           </div>
         </div>
       )}
@@ -155,10 +162,16 @@ export default function HistoryPage() {
                   className={`text-[9px] font-medium px-2 py-1 rounded-full ${
                     rec.workType === "WFH"
                       ? "bg-blue-light text-navy"
-                      : "bg-gold-light text-green-800"
+                      : rec.workType === "OFFICE"
+                        ? "bg-green-50 text-green-700"
+                        : "bg-gold-light text-green-800"
                   }`}
                 >
-                  {rec.workType === "WFH" ? "🏠 WFH" : "🚗 ออกราชการ"}
+                  {rec.workType === "WFH"
+                    ? "🏠 WFH"
+                    : rec.workType === "OFFICE"
+                      ? "🏢 เข้าสำนักงาน"
+                      : "🚗 ไปราชการ"}
                 </span>
 
                 {rec.images.length > 0 && (

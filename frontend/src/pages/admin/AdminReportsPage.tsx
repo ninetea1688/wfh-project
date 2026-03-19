@@ -50,7 +50,7 @@ export default function AdminReportsPage() {
     search: search || undefined,
     from: dateFrom,
     to: dateTo,
-    type: workType || 'ALL',
+    type: workType || "ALL",
     dept: dept || undefined,
     page,
     limit,
@@ -107,7 +107,7 @@ export default function AdminReportsPage() {
           <td>${item.user.firstName} ${item.user.lastName}</td>
           <td>${item.user.department?.name ?? "—"}</td>
           <td>${format(new Date(item.workDate), "dd/MM/yyyy")}</td>
-          <td>${item.workType === "WFH" ? "Work From Home" : "ออกปฏิบัติราชการ"}</td>
+          <td>${item.workType === "WFH" ? "Work From Home" : item.workType === "OFFICE" ? "เข้าสำนักงาน" : "ไปราชการ"}</td>
           <td>${item.checkInTime ? format(new Date(item.checkInTime), "HH:mm") : "—"}</td>
           <td>${item.checkOutTime ? format(new Date(item.checkOutTime), "HH:mm") : "—"}</td>
           <td>${item.status === "PRESENT" ? "สมบูรณ์" : "รอออกงาน"}</td>
@@ -234,7 +234,8 @@ export default function AdminReportsPage() {
               >
                 <option value="">ทั้งหมด</option>
                 <option value="WFH">WFH</option>
-                <option value="FIELD">ออกราชการ</option>
+                <option value="OFFICE">เข้าสำนักงาน</option>
+                <option value="FIELD">ไปราชการ</option>
               </select>
             </div>
             <div>
@@ -251,7 +252,9 @@ export default function AdminReportsPage() {
               >
                 <option value="">ทั้งหมด</option>
                 {departments?.map((d) => (
-                  <option key={d.id} value={String(d.id)}>{d.name}</option>
+                  <option key={d.id} value={String(d.id)}>
+                    {d.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -331,16 +334,17 @@ export default function AdminReportsPage() {
                     </td>
                   </tr>
                 )}
-                {!isLoading && (!data?.records || data.records.length === 0) && (
-                  <tr>
-                    <td
-                      colSpan={10}
-                      className="text-center py-8 text-slate-400"
-                    >
-                      ไม่พบข้อมูล
-                    </td>
-                  </tr>
-                )}
+                {!isLoading &&
+                  (!data?.records || data.records.length === 0) && (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="text-center py-8 text-slate-400"
+                      >
+                        ไม่พบข้อมูล
+                      </td>
+                    </tr>
+                  )}
                 {data?.records?.map((item, idx) => (
                   <tr
                     key={item.id}
@@ -376,10 +380,16 @@ export default function AdminReportsPage() {
                         className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                           item.workType === "WFH"
                             ? "bg-blue-light text-navy"
-                            : "bg-gold/20 text-green-800"
+                            : item.workType === "OFFICE"
+                              ? "bg-green-50 text-green-700"
+                              : "bg-gold/20 text-green-800"
                         }`}
                       >
-                        {item.workType === "WFH" ? "WFH" : "ราชการ"}
+                        {item.workType === "WFH"
+                          ? "WFH"
+                          : item.workType === "OFFICE"
+                            ? "เข้าสำนักงาน"
+                            : "ไปราชการ"}
                       </span>
                     </td>
                     <td className="px-3 py-2.5">

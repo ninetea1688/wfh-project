@@ -6,6 +6,8 @@ import {
   Users,
   Building2,
   LogOut,
+  CalendarDays,
+  CalendarCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +21,8 @@ const navGroups = [
     items: [
       { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
       { to: "/admin/reports", icon: BarChart3, label: "รายงาน" },
+      { to: "/admin/plan-calendar", icon: CalendarDays, label: "แผนงาน" },
+      { to: "/admin/results-calendar", icon: CalendarCheck, label: "ผลงาน" },
     ],
   },
   {

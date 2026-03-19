@@ -16,7 +16,7 @@ interface Department {
 interface HistoryRecord {
   id: number;
   workDate: string;
-  workType: 'WFH' | 'FIELD';
+  workType: "WFH" | "FIELD";
   checkInTime: string | null;
   checkOutTime: string | null;
   status: string;
@@ -79,8 +79,7 @@ export default function AdminUsersPage() {
       reportsService
         .getReports({ userId: String(historyTarget!.id), limit: "30" })
         .then(
-          (r) =>
-            r.data.data as { records: HistoryRecord[]; total: number },
+          (r) => r.data.data as { records: HistoryRecord[]; total: number },
         ),
     enabled: !!historyTarget,
   });
@@ -412,9 +411,12 @@ export default function AdminUsersPage() {
           <div className="bg-white rounded-xl w-full max-w-2xl shadow-xl flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
               <div>
-                <h3 className="text-sm font-semibold text-slate-800">ประวัติการลงชื่อ</h3>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  ประวัติการลงชื่อ
+                </h3>
                 <p className="text-[10px] text-slate-400 mt-0.5">
-                  {historyTarget.firstName} {historyTarget.lastName} ({historyTarget.employeeCode})
+                  {historyTarget.firstName} {historyTarget.lastName} (
+                  {historyTarget.employeeCode})
                 </p>
               </div>
               <button
@@ -426,43 +428,80 @@ export default function AdminUsersPage() {
             </div>
             <div className="overflow-auto flex-1">
               {historyLoading ? (
-                <div className="text-center py-8 text-slate-400 text-xs">กำลังโหลด...</div>
+                <div className="text-center py-8 text-slate-400 text-xs">
+                  กำลังโหลด...
+                </div>
               ) : !historyData?.records?.length ? (
-                <div className="text-center py-8 text-slate-400 text-xs">ไม่พบข้อมูล</div>
+                <div className="text-center py-8 text-slate-400 text-xs">
+                  ไม่พบข้อมูล
+                </div>
               ) : (
                 <table className="w-full text-xs">
                   <thead className="sticky top-0 bg-slate-50 border-b border-slate-100">
                     <tr>
-                      {['#', 'วันที่', 'ประเภท', 'เข้างาน', 'ออกงาน', 'สถานะ'].map((h) => (
-                        <th key={h} className="px-3 py-2.5 text-left text-[10px] text-slate-500 font-medium whitespace-nowrap">{h}</th>
+                      {[
+                        "#",
+                        "วันที่",
+                        "ประเภท",
+                        "เข้างาน",
+                        "ออกงาน",
+                        "สถานะ",
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className="px-3 py-2.5 text-left text-[10px] text-slate-500 font-medium whitespace-nowrap"
+                        >
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {historyData.records.map((r, i) => (
-                      <tr key={r.id} className="border-t border-slate-50 hover:bg-slate-50">
+                      <tr
+                        key={r.id}
+                        className="border-t border-slate-50 hover:bg-slate-50"
+                      >
                         <td className="px-3 py-2 text-slate-400">{i + 1}</td>
                         <td className="px-3 py-2 text-slate-700 whitespace-nowrap">
-                          {format(new Date(r.workDate), 'dd/MM/yyyy')}
+                          {format(new Date(r.workDate), "dd/MM/yyyy")}
                         </td>
                         <td className="px-3 py-2">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                            r.workType === 'WFH' ? 'bg-blue-light text-navy' : 'bg-gold-light text-green-800'
-                          }`}>
-                            {r.workType === 'WFH' ? '🏠 WFH' : '🚗 ราชการ'}
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              r.workType === "WFH"
+                                ? "bg-blue-light text-navy"
+                                : r.workType === "OFFICE"
+                                  ? "bg-green-50 text-green-700"
+                                  : "bg-gold-light text-green-800"
+                            }`}
+                          >
+                            {r.workType === "WFH"
+                              ? "🏠 WFH"
+                              : r.workType === "OFFICE"
+                                ? "🏢 สำนักงาน"
+                                : "🚗 ไปราชการ"}
                           </span>
                         </td>
                         <td className="px-3 py-2 text-slate-600">
-                          {r.checkInTime ? format(new Date(r.checkInTime), 'HH:mm') : '—'}
+                          {r.checkInTime
+                            ? format(new Date(r.checkInTime), "HH:mm")
+                            : "—"}
                         </td>
                         <td className="px-3 py-2 text-slate-600">
-                          {r.checkOutTime ? format(new Date(r.checkOutTime), 'HH:mm') : '—'}
+                          {r.checkOutTime
+                            ? format(new Date(r.checkOutTime), "HH:mm")
+                            : "—"}
                         </td>
                         <td className="px-3 py-2">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                            r.status === 'PRESENT' ? 'bg-green-50 text-success' : 'bg-gold-light text-green-700'
-                          }`}>
-                            {r.status === 'PRESENT' ? 'สมบูรณ์' : 'ไม่สมบูรณ์'}
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              r.status === "PRESENT"
+                                ? "bg-green-50 text-success"
+                                : "bg-gold-light text-green-700"
+                            }`}
+                          >
+                            {r.status === "PRESENT" ? "สมบูรณ์" : "ไม่สมบูรณ์"}
                           </span>
                         </td>
                       </tr>

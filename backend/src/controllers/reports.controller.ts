@@ -62,21 +62,27 @@ export const getDashboard = async (
 
     const checkedIn = todayRecords.length;
     const wfhCount = todayRecords.filter((r) => r.workType === "WFH").length;
+    const officeCount = todayRecords.filter(
+      (r) => r.workType === "OFFICE",
+    ).length;
     const fieldCount = todayRecords.filter(
       (r) => r.workType === "FIELD",
     ).length;
     const notCheckedIn = totalActive - checkedIn;
 
     // Build weekly chart data
-    const weeklyData: Record<string, { WFH: number; FIELD: number }> = {};
+    const weeklyData: Record<
+      string,
+      { WFH: number; OFFICE: number; FIELD: number }
+    > = {};
     for (let i = 0; i < 7; i++) {
       const d = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
-      weeklyData[d] = { WFH: 0, FIELD: 0 };
+      weeklyData[d] = { WFH: 0, OFFICE: 0, FIELD: 0 };
     }
     weekRecords.forEach((r) => {
       const d = format(r.workDate, "yyyy-MM-dd");
-      const wt = r.workType as "WFH" | "FIELD";
-      if (weeklyData[d] && (wt === "WFH" || wt === "FIELD"))
+      const wt = r.workType as "WFH" | "OFFICE" | "FIELD";
+      if (weeklyData[d] && (wt === "WFH" || wt === "OFFICE" || wt === "FIELD"))
         weeklyData[d][wt] += (r._count as { id: number }).id ?? 0;
     });
 
@@ -98,6 +104,7 @@ export const getDashboard = async (
       today: {
         checkedIn,
         wfhCount,
+        officeCount,
         fieldCount,
         notCheckedIn,
         total: totalActive,
@@ -131,9 +138,8 @@ export const getReports = async (
       limit: z.string().optional().default("10"),
     });
 
-    const { from, to, type, dept, userId, search, page, limit } = querySchema.parse(
-      req.query,
-    );
+    const { from, to, type, dept, userId, search, page, limit } =
+      querySchema.parse(req.query);
     const pageNum = parseInt(page);
     const limitNum = Math.min(parseInt(limit), 100);
 
