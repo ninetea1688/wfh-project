@@ -69,7 +69,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+        VITE_API_URL: ""  # empty = relative /api path; nginx proxies to backend
     container_name: wfh_frontend
     ports:
       - "8080:80"

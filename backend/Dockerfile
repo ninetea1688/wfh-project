@@ -14,8 +14,8 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Compile TypeScript
-RUN npm run build
+# Compile TypeScript app + seed
+RUN npm run build && npx tsc -p tsconfig.seed.json
 
 # ── Stage 2: Production ────────────────────────────────────────
 FROM node:20-alpine AS production
@@ -29,7 +29,7 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Copy compiled output
+# Copy compiled output (includes dist/prisma/seed.js)
 COPY --from=builder /app/dist ./dist
 
 # Copy Prisma schema + generated client
