@@ -180,11 +180,10 @@ cp .env.example .env
 # ⚠️ สำคัญมาก: เปลี่ยน JWT_SECRET เป็น random string ยาวๆ ก่อนใช้งานจริง
 JWT_SECRET=เปลี่ยนค่านี้เป็น-random-string-ยาวอย่างน้อย-64-ตัวอักษร
 
-# URL ที่ผู้ใช้งานจะเข้าถึงระบบ
-# ถ้ารันบนเครื่องตัวเอง: ใช้ localhost
-# ถ้ารันบน server จริง: เปลี่ยน localhost เป็น IP หรือ domain
-CORS_ORIGIN=http://localhost:8080
-VITE_API_URL=http://localhost:4000
+# URL ที่ frontend จะเข้าถึงได้ (ต้องตรงกับ origin ของ browser)
+# ถ้ารัน Docker บนเครื่องตัวเอง: ใช้ localhost:4002
+# ถ้ารันบน server จริงหลัง nginx reverse proxy:
+CORS_ORIGIN=http://localhost:4002
 ```
 
 > 💡 **วิธีสร้าง JWT_SECRET ที่ปลอดภัย:**
@@ -220,10 +219,10 @@ docker exec wfh_backend npx prisma db seed
 
 ### ขั้นตอนที่ 6 — เข้าใช้งาน 🎉
 
-| บริการ                     | URL                       |
-| -------------------------- | ------------------------- |
-| 🌐 **Frontend (หน้าเว็บ)** | http://localhost:8080     |
-| ⚙️ **Backend API**         | http://localhost:4000/api |
+| บริการ                     | URL                            |
+| -------------------------- | ------------------------------ |
+| 🌐 **Frontend (หน้าเว็บ)** | http://localhost:4002/wfh/     |
+| ⚙️ **Backend API**         | http://localhost:4001/api      |
 
 ---
 
@@ -344,11 +343,8 @@ cd frontend
 npm install
 ```
 
-สร้างไฟล์ `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:4000
-```
+> 💡 **หมายเหตุ:** ไม่ต้องสร้างไฟล์ `frontend/.env` สำหรับ dev mode
+> Vite dev server จะ proxy `/api/` → `http://localhost:4000` ให้อัตโนมัติ (ไม่มี CORS)
 
 ### ขั้นตอนที่ 7 — เริ่ม Frontend
 
@@ -556,9 +552,9 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### Frontend (`frontend/.env`)
 
-| ตัวแปร         | ตัวอย่าง                | คำอธิบาย            |
-| -------------- | ----------------------- | ------------------- |
-| `VITE_API_URL` | `http://localhost:4000` | URL ของ Backend API |
+| ตัวแปร         | ตัวอย่าง | คำอธิบาย                                                                 |
+| -------------- | -------- | ------------------------------------------------------------------------ |
+| `VITE_API_URL` | (ว่าง)   | ปล่อยว่างเสมอ — ทั้ง Docker และ dev mode ใช้ relative `/api` proxy แทน |
 
 ---
 
@@ -622,9 +618,10 @@ docker-compose ps
 ### ❌ Frontend เชื่อม Backend ไม่ได้ — CORS Error ใน browser console
 
 ```bash
-# ตรวจสอบว่า CORS_ORIGIN ใน .env (backend) ตรงกับ URL ของ frontend
-# Dev: CORS_ORIGIN=http://localhost:5173
-# Docker: CORS_ORIGIN=http://localhost:8080
+# ตรวจสอบว่า CORS_ORIGIN ใน .env (backend) ตรงกับ URL origin ของ browser
+# dev (npm run dev): CORS_ORIGIN=http://localhost:5173
+# Docker local:      CORS_ORIGIN=http://localhost:4002
+# Production:        CORS_ORIGIN=http://<YOUR_DOMAIN_OR_IP>
 ```
 
 ### ❌ รูปภาพที่แนบไม่แสดงในหน้า History
@@ -637,14 +634,80 @@ ls -la uploads/      # macOS/Linux
 mkdir uploads
 ```
 
-### ❌ Port 8080 ถูกใช้งานอยู่ (Docker Production)
+### ❌ Port 4002 หรือ 4001 ถูกใช้งานอยู่ (Docker)
 
 ```yaml
 # แก้ใน docker-compose.yml
+backend:
+  ports:
+    - "4011:4000"  # เปลี่ยนจาก 4001 เป็น port อื่น
 frontend:
   ports:
-    - "3000:80" # เปลี่ยนจาก 8080 เป็น port อื่น
+    - "4012:80"    # เปลี่ยนจาก 4002 เป็น port อื่น
 ```
+
+---
+
+## 🌐 Deploy บน Production Server (nginx reverse proxy)
+
+สำหรับกรณีที่ deploy บน server จริงโดยมี nginx อยู่หน้า เช่น รันแอปที่ `/wfh/`:
+
+### 1. แก้ไข `.env` บน server
+
+```env
+CORS_ORIGIN=http://<YOUR_IP_OR_DOMAIN>
+```
+
+### 2. เพิ่ม config ใน nginx ของ server
+
+```nginx
+# Backend API
+location /wfhapi/ {
+    proxy_pass http://127.0.0.1:4001/;   # trailing slash สำคัญ
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 60s;
+    proxy_redirect off;
+}
+
+# Frontend App
+location /wfh/ {
+    proxy_pass http://127.0.0.1:4002/;   # trailing slash สำคัญ
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_read_timeout 60s;
+}
+```
+
+```bash
+sudo nginx -t && sudo nginx -s reload
+```
+
+### 3. Deploy
+
+```bash
+git pull
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+
+# ครั้งแรก: migrate + seed
+docker exec wfh_backend npx prisma migrate deploy
+docker exec wfh_backend npx prisma db seed
+```
+
+| บริการ     | URL                                  |
+| ---------- | ------------------------------------ |
+| 🌐 Frontend | `http://<YOUR_IP>/wfh/`              |
+| ⚙️ API     | `http://<YOUR_IP>/wfhapi/api/...`    |
 
 ---
 
