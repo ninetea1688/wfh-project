@@ -22,6 +22,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: builder
+    environment:
+      BACKEND_URL: http://backend:4000
     ports:
       - "5173:5173"
     volumes:

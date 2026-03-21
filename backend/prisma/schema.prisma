@@ -125,6 +125,7 @@ enum WorkType {
   WFH
   OFFICE
   FIELD
+  ON_SITE
 }
 
 enum AttendanceStatus {
@@ -137,4 +138,5 @@ enum PlanType {
   OFFICE
   FIELD
   LEAVE
+  ON_SITE
 }

@@ -5,7 +5,7 @@ import { ok, fail } from "../utils/response";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { startOfWeek, endOfWeek, addDays, format, parseISO } from "date-fns";
 
-type PlanType = "WFH" | "OFFICE" | "FIELD" | "LEAVE";
+type PlanType = "WFH" | "OFFICE" | "FIELD" | "LEAVE" | "ON_SITE";
 
 function localDateUTC(d: Date = new Date()): Date {
   return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -15,7 +15,7 @@ const upsertSchema = z.object({
   planDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "planDate must be YYYY-MM-DD"),
-  planType: z.enum(["WFH", "OFFICE", "FIELD", "LEAVE"]),
+  planType: z.enum(["WFH", "OFFICE", "FIELD", "LEAVE", "ON_SITE"]),
   note: z.string().max(500).optional().nullable(),
 });
 
@@ -177,10 +177,10 @@ export const logActual = async (
     const body = actualNoteSchema.parse(req.body);
     const planDate = localDateUTC(parseISO(dateParam));
 
-    // Verify the date is in the past (the week has passed)
+    // Verify the date is not in the future
     const today = localDateUTC();
-    if (planDate >= today) {
-      fail(res, 400, "สามารถบันทึกผลได้เฉพาะวันที่ผ่านมาแล้ว");
+    if (planDate > today) {
+      fail(res, 400, "สามารถบันทึกผลได้เฉพาะวันที่ผ่านมาแล้วหรือวันนี้");
       return;
     }
 
@@ -245,7 +245,7 @@ export const getLeaveSummary = async (
     const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
     const endOfMonth = new Date(Date.UTC(year, month, 0)); // last day of month
 
-    const [leaveDays, wfhDays, officeDays, fieldDays, totalPlanned] =
+    const [leaveDays, wfhDays, officeDays, fieldDays, onSiteDays, totalPlanned] =
       await Promise.all([
         prisma.workPlan.count({
           where: {
@@ -276,6 +276,13 @@ export const getLeaveSummary = async (
           },
         }),
         prisma.workPlan.count({
+          where: {
+            userId,
+            planType: "ON_SITE",
+            planDate: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+        prisma.workPlan.count({
           where: { userId, planDate: { gte: startOfMonth, lte: endOfMonth } },
         }),
       ]);
@@ -287,6 +294,7 @@ export const getLeaveSummary = async (
       wfhDays,
       officeDays,
       fieldDays,
+      onSiteDays,
       totalPlanned,
     });
   } catch (err) {
@@ -329,6 +337,7 @@ export const getTomorrowSummary = async (
     const office = plans.filter((p) => p.planType === "OFFICE");
     const field = plans.filter((p) => p.planType === "FIELD");
     const leave = plans.filter((p) => p.planType === "LEAVE");
+    const onSite = plans.filter((p) => p.planType === "ON_SITE");
     const notPlanned = totalStaff - plans.length;
 
     ok(res, {
@@ -338,11 +347,13 @@ export const getTomorrowSummary = async (
       officeCount: office.length,
       fieldCount: field.length,
       leaveCount: leave.length,
+      onSiteCount: onSite.length,
       notPlannedCount: notPlanned,
       wfhUsers: wfh.map((p) => p.user),
       officeUsers: office.map((p) => p.user),
       fieldUsers: field.map((p) => p.user),
       leaveUsers: leave.map((p) => p.user),
+      onSiteUsers: onSite.map((p) => p.user),
     });
   } catch (err) {
     next(err);
@@ -449,21 +460,33 @@ export const getAdminMonthResults = async (
     const startDate = new Date(Date.UTC(year, month - 1, 1));
     const endDate = new Date(Date.UTC(year, month, 0));
 
-    const attendances = await prisma.attendance.findMany({
-      where: { workDate: { gte: startDate, lte: endDate } },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            position: true,
-            department: { select: { name: true } },
+    const [attendances, workPlans] = await Promise.all([
+      prisma.attendance.findMany({
+        where: { workDate: { gte: startDate, lte: endDate } },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              position: true,
+              department: { select: { name: true } },
+            },
           },
         },
-      },
-      orderBy: [{ workDate: "asc" }, { user: { firstName: "asc" } }],
-    });
+        orderBy: [{ workDate: "asc" }, { user: { firstName: "asc" } }],
+      }),
+      prisma.workPlan.findMany({
+        where: { planDate: { gte: startDate, lte: endDate } },
+        select: { userId: true, planDate: true, planType: true, note: true },
+      }),
+    ]);
+
+    // Build plan lookup: "userId_dateStr" -> { planType, note }
+    const planMap = new Map<string, { planType: string; note: string | null }>();
+    for (const p of workPlans) {
+      planMap.set(`${p.userId}_${format(p.planDate, "yyyy-MM-dd")}`, { planType: p.planType, note: p.note });
+    }
 
     // Group by date string
     const byDate: Record<
@@ -474,6 +497,8 @@ export const getAdminMonthResults = async (
         lastName: string;
         position: string | null;
         department: { name: string } | null;
+        planType: string | null;
+        planNote: string | null;
         workType: string;
         status: string;
         checkInTime: string | null;
@@ -485,12 +510,15 @@ export const getAdminMonthResults = async (
     for (const a of attendances) {
       const dateStr = format(a.workDate, "yyyy-MM-dd");
       if (!byDate[dateStr]) byDate[dateStr] = [];
+      const plan = planMap.get(`${a.user.id}_${dateStr}`) ?? null;
       byDate[dateStr].push({
         userId: a.user.id,
         firstName: a.user.firstName,
         lastName: a.user.lastName,
         position: a.user.position,
         department: a.user.department,
+        planType: plan?.planType ?? null,
+        planNote: plan?.note ?? null,
         workType: a.workType,
         status: a.status,
         checkInTime: a.checkInTime ? a.checkInTime.toISOString() : null,

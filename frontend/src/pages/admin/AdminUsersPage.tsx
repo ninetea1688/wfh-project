@@ -16,7 +16,7 @@ interface Department {
 interface HistoryRecord {
   id: number;
   workDate: string;
-  workType: "WFH" | "FIELD";
+  workType: "WFH" | "OFFICE" | "FIELD" | "ON_SITE";
   checkInTime: string | null;
   checkOutTime: string | null;
   status: string;

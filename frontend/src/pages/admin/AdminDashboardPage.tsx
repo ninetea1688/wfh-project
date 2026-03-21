@@ -8,6 +8,7 @@ import {
   Briefcase,
   Building2,
   CalendarOff,
+  MapPin,
   HelpCircle,
 } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -19,6 +20,7 @@ interface DashboardData {
     checkedIn: number;
     wfhCount: number;
     fieldCount: number;
+    onSiteCount: number;
     notCheckedIn: number;
     total: number;
   };
@@ -39,7 +41,7 @@ interface DashboardData {
     position: string | null;
     department: { name: string } | null;
   }>;
-  weeklyChart: Array<{ date: string; WFH: number; FIELD: number }>;
+  weeklyChart: Array<{ date: string; WFH: number; FIELD: number; ON_SITE: number }>;
 }
 
 export default function AdminDashboardPage() {
@@ -96,10 +98,20 @@ export default function AdminDashboardPage() {
       badgeCls: "bg-gold-light text-green-800",
       icon: Briefcase,
     },
+    {
+      label: "ออกพื้นที่",
+      value: today?.onSiteCount ?? 0,
+      color: "text-purple-600",
+      badge: today?.checkedIn
+        ? `${Math.round(((today.onSiteCount ?? 0) / today.checkedIn) * 100)}% ของวันนี้`
+        : "0%",
+      badgeCls: "bg-purple-50 text-purple-700",
+      icon: MapPin,
+    },
   ];
 
   const maxBarValue = Math.max(
-    ...(data?.weeklyChart.map((d) => d.WFH + d.FIELD) ?? [1]),
+    ...(data?.weeklyChart.map((d) => d.WFH + d.FIELD + (d.ON_SITE ?? 0)) ?? [1]),
   );
 
   return (
@@ -151,7 +163,7 @@ export default function AdminDashboardPage() {
             )}
           </h3>
           {tomorrowData ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
               {[
                 {
                   label: "Work From Home",
@@ -173,6 +185,13 @@ export default function AdminDashboardPage() {
                   icon: Briefcase,
                   bg: "bg-gold-light",
                   text: "text-amber-800",
+                },
+                {
+                  label: "ออกพื้นที่",
+                  value: tomorrowData.onSiteCount ?? 0,
+                  icon: MapPin,
+                  bg: "bg-purple-50",
+                  text: "text-purple-700",
                 },
                 {
                   label: "ลา",
@@ -229,7 +248,7 @@ export default function AdminDashboardPage() {
             {data?.weeklyChart && (
               <div className="flex items-end gap-2 h-20">
                 {data.weeklyChart.map((day) => {
-                  const total = day.WFH + day.FIELD;
+                  const total = day.WFH + day.FIELD + (day.ON_SITE ?? 0);
                   const height =
                     maxBarValue > 0 ? (total / maxBarValue) * 100 : 0;
                   return (
@@ -244,7 +263,7 @@ export default function AdminDashboardPage() {
                             height: `${height}%`,
                             minHeight: total > 0 ? "4px" : "0",
                           }}
-                          title={`${format(new Date(day.date), "dd/MM")}: WFH=${day.WFH}, ไปราชการ=${day.FIELD}`}
+                          title={`${format(new Date(day.date), "dd/MM")}: WFH=${day.WFH}, ไปราชการ=${day.FIELD}, ออกพื้นที่=${day.ON_SITE ?? 0}`}
                         />
                       </div>
                       <span className="text-[8px] text-slate-400">
@@ -280,6 +299,11 @@ export default function AdminDashboardPage() {
                     label: "ไปราชการ",
                     value: today.fieldCount,
                     color: "bg-gold",
+                  },
+                  {
+                    label: "ออกพื้นที่",
+                    value: today.onSiteCount ?? 0,
+                    color: "bg-purple-500",
                   },
                   {
                     label: "ไม่ลงชื่อ",

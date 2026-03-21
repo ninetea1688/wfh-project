@@ -2,7 +2,9 @@ import axios, { AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/auth.store'
 
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') + '/api',
+  baseURL: import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/\/+$/, '') + '/api'
+    : '/api',
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 })
@@ -22,7 +24,7 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout()
-      window.location.href = '/login'
+      window.location.href = import.meta.env.BASE_URL + 'login'
     }
     return Promise.reject(error)
   }

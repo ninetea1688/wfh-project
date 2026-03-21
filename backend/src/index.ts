@@ -15,6 +15,9 @@ import { errorHandler } from "./middleware/error.middleware";
 const app = express();
 const PORT = process.env.PORT ?? 4000;
 
+// Trust the nginx reverse proxy (first hop)
+app.set("trust proxy", 1);
+
 // Security
 app.use(helmet());
 app.use(

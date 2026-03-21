@@ -12,6 +12,7 @@ const FILTERS = [
   { label: "ทั้งหมด", value: "ALL" },
   { label: "WFH", value: "WFH" },
   { label: "เข้าสำนักงาน", value: "OFFICE" },
+  { label: "ออกพื้นที่", value: "ON_SITE" },
   { label: "ไปราชการ", value: "FIELD" },
 ];
 
@@ -26,7 +27,7 @@ export default function HistoryPage() {
     queryFn: () =>
       attendanceService
         .getHistory({
-          type: filter as "WFH" | "FIELD" | "ALL",
+          type: filter as "WFH" | "OFFICE" | "FIELD" | "ON_SITE" | "ALL",
           page,
           limit: 10,
         })

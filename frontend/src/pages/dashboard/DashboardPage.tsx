@@ -20,6 +20,7 @@ import {
   FileText,
   Image as ImageIcon,
   X,
+  MapPin,
 } from "lucide-react";
 import { PlanType, DayPlan, getAttachmentUrl } from "@/services/workplan.service";
 import { useAuthStore } from "@/stores/auth.store";
@@ -51,6 +52,12 @@ const PLAN_DASH: Record<
     bg: "bg-red-50",
     text: "text-red-700",
     icon: CalendarOff,
+  },
+  ON_SITE: {
+    label: "ออกพื้นที่",
+    bg: "bg-purple-50",
+    text: "text-purple-800",
+    icon: MapPin,
   },
 };
 import { formatThaiDate, formatTime, formatDuration } from "@/lib/utils";
@@ -283,7 +290,7 @@ export default function DashboardPage() {
                 วางแผน
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {[
                 {
                   label: "WFH",
@@ -296,6 +303,12 @@ export default function DashboardPage() {
                   value: leaveSummary.officeDays,
                   icon: Building2,
                   cls: "text-green-700 bg-green-50",
+                },
+                {
+                  label: "ออกพื้นที่",
+                  value: leaveSummary.onSiteDays,
+                  icon: MapPin,
+                  cls: "text-purple-700 bg-purple-50",
                 },
                 {
                   label: "ไปราชการ",

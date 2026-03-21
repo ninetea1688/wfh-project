@@ -1,7 +1,7 @@
 import api from "@/lib/api";
 
 export interface CheckInPayload {
-  workType: "WFH" | "OFFICE" | "FIELD";
+  workType: "WFH" | "OFFICE" | "FIELD" | "ON_SITE";
   taskDescription: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -12,7 +12,7 @@ export interface AttendanceRecord {
   id: number;
   userId: number;
   workDate: string;
-  workType: "WFH" | "OFFICE" | "FIELD";
+  workType: "WFH" | "OFFICE" | "FIELD" | "ON_SITE";
   checkInTime: string;
   checkOutTime: string | null;
   taskDescription: string | null;

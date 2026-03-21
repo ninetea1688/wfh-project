@@ -12,7 +12,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { formatThaiDate, formatTime } from "@/lib/utils";
 
 const schema = z.object({
-  workType: z.enum(["WFH", "OFFICE", "FIELD"]),
+  workType: z.enum(["WFH", "OFFICE", "FIELD", "ON_SITE"]),
   taskDescription: z.string().min(5, "กรุณาระบุภารกิจอย่างน้อย 5 ตัวอักษร"),
 });
 type FormData = z.infer<typeof schema>;
@@ -168,25 +168,33 @@ export default function CheckinPage() {
           ประเภทการปฏิบัติงาน
         </p>
         <div className="grid grid-cols-2 gap-3 mx-4 mb-4">
-          {(["WFH", "FIELD"] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setValue("workType", type)}
-              className={`p-3 rounded-xl border-2 text-center transition-all ${
-                workType === type
-                  ? "border-blue bg-blue-light"
-                  : "border-slate-200 bg-white"
-              }`}
-            >
-              <div className="text-xl mb-1">{type === "WFH" ? "🏠" : "🚗"}</div>
-              <div
-                className={`text-xs font-medium ${workType === type ? "text-navy" : "text-slate-500"}`}
+          {(["WFH", "OFFICE", "ON_SITE", "FIELD"] as const).map((type) => {
+            const cfg = {
+              WFH:     { icon: "🏠", label: "Work From Home" },
+              OFFICE:  { icon: "🏢", label: "เข้าสำนักงาน" },
+              ON_SITE: { icon: "📍", label: "ออกปฏิบัติงานพื้นที่" },
+              FIELD:   { icon: "🚗", label: "ไปราชการ" },
+            }[type];
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setValue("workType", type)}
+                className={`p-3 rounded-xl border-2 text-center transition-all ${
+                  workType === type
+                    ? "border-blue bg-blue-light"
+                    : "border-slate-200 bg-white"
+                }`}
               >
-                {type === "WFH" ? "Work From Home" : "ไปราชการ"}
-              </div>
-            </button>
-          ))}
+                <div className="text-xl mb-1">{cfg.icon}</div>
+                <div
+                  className={`text-xs font-medium ${workType === type ? "text-navy" : "text-slate-500"}`}
+                >
+                  {cfg.label}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* GPS Status */}

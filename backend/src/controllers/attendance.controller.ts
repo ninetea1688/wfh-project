@@ -7,7 +7,7 @@ type AttendanceStatus = "PRESENT" | "INCOMPLETE";
 import { startOfDay, endOfDay } from "date-fns";
 
 const checkInSchema = z.object({
-  workType: z.enum(["WFH", "OFFICE", "FIELD"]),
+  workType: z.enum(["WFH", "OFFICE", "FIELD", "ON_SITE"]),
   taskDescription: z.string().min(5, "กรุณาระบุภารกิจอย่างน้อย 5 ตัวอักษร"),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
@@ -127,7 +127,7 @@ export const getHistory = async (
     const querySchema = z.object({
       from: z.string().optional(),
       to: z.string().optional(),
-      type: z.enum(["WFH", "FIELD", "ALL"]).optional().default("ALL"),
+      type: z.enum(["WFH", "OFFICE", "FIELD", "ON_SITE", "ALL"]).optional().default("ALL"),
       page: z.string().optional().default("1"),
       limit: z.string().optional().default("10"),
     });

@@ -18,6 +18,7 @@ import {
   Building2,
   Briefcase,
   CalendarOff,
+  MapPin,
   CheckCircle2,
   ClipboardEdit,
   Trash2,
@@ -71,6 +72,13 @@ const PLAN_CONFIG: Record<
     bg: "bg-red-50",
     text: "text-red-700",
     border: "border-red-200",
+  },
+  ON_SITE: {
+    label: "ออกปฏิบัติงานพื้นที่",
+    icon: MapPin,
+    bg: "bg-purple-50",
+    text: "text-purple-700",
+    border: "border-purple-200",
   },
 };
 
@@ -250,11 +258,15 @@ export default function WeeklyPlanPage() {
                     </button>
                   )}
 
-                  {/* Log actual — past days only */}
-                  {isPast && day.plan && (
+                  {/* Log actual — today and past days with a plan */}
+                  {(isPast || isToday) && day.plan && (
                     <button
                       onClick={() => handleOpenEdit(day, "actual")}
-                      className="p-1 rounded text-slate-400 hover:text-success hover:bg-green-50 transition-colors"
+                      className={`p-1 rounded transition-colors ${
+                        isToday
+                          ? "text-white/70 hover:text-white hover:bg-white/20"
+                          : "text-slate-400 hover:text-success hover:bg-green-50"
+                      }`}
                       title="บันทึกผลจริง"
                     >
                       <CheckCircle2 size={13} />

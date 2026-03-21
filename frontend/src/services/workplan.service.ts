@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 
-export type PlanType = "WFH" | "OFFICE" | "FIELD" | "LEAVE";
+export type PlanType = "WFH" | "OFFICE" | "FIELD" | "LEAVE" | "ON_SITE";
 
 export interface WorkPlanAttachment {
   id: number;
@@ -56,6 +56,7 @@ export interface LeaveSummary {
   wfhDays: number;
   officeDays: number;
   fieldDays: number;
+  onSiteDays: number;
   totalPlanned: number;
 }
 
@@ -66,6 +67,7 @@ export interface TomorrowSummary {
   officeCount: number;
   fieldCount: number;
   leaveCount: number;
+  onSiteCount: number;
   notPlannedCount: number;
   wfhUsers: Array<{
     id: number;
@@ -120,6 +122,8 @@ export interface AdminDayResultEntry {
   lastName: string;
   position: string | null;
   department: { name: string } | null;
+  planType: string | null;
+  planNote: string | null;
   workType: string;
   status: string;
   checkInTime: string | null;

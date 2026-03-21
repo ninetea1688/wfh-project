@@ -68,21 +68,24 @@ export const getDashboard = async (
     const fieldCount = todayRecords.filter(
       (r) => r.workType === "FIELD",
     ).length;
+    const onSiteCount = todayRecords.filter(
+      (r) => r.workType === "ON_SITE",
+    ).length;
     const notCheckedIn = totalActive - checkedIn;
 
     // Build weekly chart data
     const weeklyData: Record<
       string,
-      { WFH: number; OFFICE: number; FIELD: number }
+      { WFH: number; OFFICE: number; FIELD: number; ON_SITE: number }
     > = {};
     for (let i = 0; i < 7; i++) {
       const d = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
-      weeklyData[d] = { WFH: 0, OFFICE: 0, FIELD: 0 };
+      weeklyData[d] = { WFH: 0, OFFICE: 0, FIELD: 0, ON_SITE: 0 };
     }
     weekRecords.forEach((r) => {
       const d = format(r.workDate, "yyyy-MM-dd");
-      const wt = r.workType as "WFH" | "OFFICE" | "FIELD";
-      if (weeklyData[d] && (wt === "WFH" || wt === "OFFICE" || wt === "FIELD"))
+      const wt = r.workType as "WFH" | "OFFICE" | "FIELD" | "ON_SITE";
+      if (weeklyData[d] && (wt === "WFH" || wt === "OFFICE" || wt === "FIELD" || wt === "ON_SITE"))
         weeklyData[d][wt] += (r._count as { id: number }).id ?? 0;
     });
 
@@ -106,6 +109,7 @@ export const getDashboard = async (
         wfhCount,
         officeCount,
         fieldCount,
+        onSiteCount,
         notCheckedIn,
         total: totalActive,
       },

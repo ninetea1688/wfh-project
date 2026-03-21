@@ -14,7 +14,7 @@ interface Department {
 interface ReportItem {
   id: number;
   workDate: string;
-  workType: "WFH" | "FIELD";
+  workType: "WFH" | "OFFICE" | "FIELD" | "ON_SITE";
   checkInTime: string | null;
   checkOutTime: string | null;
   taskDescription: string | null;
@@ -236,6 +236,7 @@ export default function AdminReportsPage() {
                 <option value="WFH">WFH</option>
                 <option value="OFFICE">เข้าสำนักงาน</option>
                 <option value="FIELD">ไปราชการ</option>
+                <option value="ON_SITE">ออกปฏิบัติงานพื้นที่</option>
               </select>
             </div>
             <div>
